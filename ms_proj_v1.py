@@ -104,6 +104,10 @@ def disease_model(tot_pop, t, N, B, p, u, y1, y2, d1, d2, k, a, x, o0, o1, w, n,
         (m1 * k) * EV - (m2 * y1  +  m3 * x  +  u  +  m4 * d1) * IV, # dIV/dt
         (o0 * E)  -  (a  +  u) * Q, # dQ/dt
         (o1 * EV) - (m5 * a + u) * QV, # dQV/dt
+        (a * Q ) + (x * I) - (y2 + u + d2) * H # dH/dt
+        (m5 * a * QV) + (m3 + x + IV) - (m6 + y2 + u + m7 * d2) * HV, # dHV/dt
+        (y1 * I) + (y2 * H) - (u * R), #dR/dt
+        (m2 * y1) * IV + (m6 * y2 * HV) - (u * RV) # dRV/dt
     ]
 
 
