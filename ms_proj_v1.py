@@ -147,7 +147,7 @@ def main():
     args = (M, B, p, u, y1, y2, d1, d2, k, a, x, o0, o1, w, n, v1, v2, e, z, m1, m2, m3, m4, m5, m6, m7)
 
     # time scale
-    t = np.linspace(0, 100, 1000)
+    t = np.linspace(0, 500, 5000)
 
     for i in range(10):
         # initial conditions
@@ -156,13 +156,14 @@ def main():
         results = scipy.integrate.odeint(disease_model, inits, t, args=args)
 
         # order of returned  compartments -> S, V, E, EV, I, IV, Q, QV, H, HV, R, RV
-        infected_individuals = results[:,0]
+        infected_individuals = results[:,2] + results[:,3] + results[:,4] + results[:,5] + results[:,6] + results[:,7] + results[:,8] + results[:,9]
 
         plt.plot(t, infected_individuals)
 
     plt.xlabel("Time (days)")
     plt.ylabel("Total number of infected individuals")
     plt.title("ODE Solution")
+    plt.xlim(0, 500)  # Set x-axis range to 0-500 days
     plt.tight_layout()
     # if library just show
     # plt.show()
