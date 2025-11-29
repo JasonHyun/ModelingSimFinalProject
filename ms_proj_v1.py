@@ -172,8 +172,129 @@ def main():
 
     
 
+def figure4():
+    """
+    Replicate Figure 4 from the paper: Convergence to Endemic Equilibrium Point (EEP)
+    Parameter values: β = 0.5, ψ = ζ = η = δ₁ = δ₂ = 0, R_vac^mr = 1.2260 > 1
+    """
+    # Parameter Value Initialization: Figure 4 Parameters
+    M = 136
+    B = 0.5  # β = 0.5
+    p = 0.25
+    u = 0.0000351
+    y1 = 0.03521
+    y2 = 0.042553
+    d1 = 0  # δ₁ = 0
+    d2 = 0  # δ₂ = 0
+    k = 0.156986
+    a = 0.156986
+    x = 0.20619
+    o0 = 0.1
+    o1 = 0.06
+    w = 0  # ψ = 0
+    n = 0  # η = 0
+    v1 = 0.9
+    v2 = 0.8
+    e = 0.5
+    z = 0  # ζ = 0
+    m1 = 0.6
+    m2 = 1.4
+    m3 = 0.7
+    m4 = 0.6
+    m5 = 0.5
+    m6 = 1.4
+    m7 = 0.7
+    
+    # parameters
+    args = (M, B, p, u, y1, y2, d1, d2, k, a, x, o0, o1, w, n, v1, v2, e, z, m1, m2, m3, m4, m5, m6, m7)
+    
+    # Calculate disease-free equilibrium for initial population
+    # At DFE: S* = (1-p)M/u, V* = pM/u, all others = 0
+    # But since w=0 and z=0, we have: S* = (1-p)M/u, V* = pM/u
+    N_equilibrium = M / u  # Total population at equilibrium
+    
+    # time scale: 0 to 750 days to capture full convergence
+    t = np.linspace(0, 750, 7500)
+    
+    # Store results for all simulations
+    all_results = []
+    
+    # Run multiple simulations with different initial conditions
+    # Start near DFE with small perturbations in infected compartments
+    for i in range(10):
+        # Initial conditions: start near disease-free equilibrium
+        # Most population in S and V, very small initial infected (curves start near zero in paper)
+        S0 = (1 - p) * N_equilibrium
+        V0 = p * N_equilibrium
+        
+        # Very small initial infected values to match paper (curves start near zero)
+        # Use different ranges to get variation in initial conditions
+        initial_infected_scale = np.random.uniform(0.5, 2.0)  # Vary the scale
+        
+        E0 = np.random.uniform(1, 50) * initial_infected_scale
+        EV0 = np.random.uniform(0.5, 25) * initial_infected_scale
+        I0 = np.random.uniform(1, 50) * initial_infected_scale
+        IV0 = np.random.uniform(0.5, 25) * initial_infected_scale
+        Q0 = np.random.uniform(0.5, 25) * initial_infected_scale
+        QV0 = np.random.uniform(0.2, 12) * initial_infected_scale
+        H0 = np.random.uniform(0.5, 25) * initial_infected_scale
+        HV0 = np.random.uniform(0.2, 12) * initial_infected_scale
+        R0 = 0
+        RV0 = 0
+        
+        # Adjust S and V to maintain total population approximately at equilibrium
+        total_other = E0 + EV0 + I0 + IV0 + Q0 + QV0 + H0 + HV0 + R0 + RV0
+        # Redistribute the "missing" population proportionally
+        if total_other > 0:
+            S0 = max(0, S0 - total_other * (1 - p) / (1 - p + p))
+            V0 = max(0, V0 - total_other * p / (1 - p + p))
+        
+        inits = np.array([S0, V0, E0, EV0, I0, IV0, Q0, QV0, H0, HV0, R0, RV0])
+        
+        results = scipy.integrate.odeint(disease_model, inits, t, args=args)
+        
+        # order of returned compartments -> S, V, E, EV, I, IV, Q, QV, H, HV, R, RV
+        infected_individuals = results[:,2] + results[:,3] + results[:,4] + results[:,5] + results[:,6] + results[:,7] + results[:,8] + results[:,9]
+        
+        all_results.append(infected_individuals)
+    
+    # Create figure with two subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    
+    # Plot A: Full view (0-700 days) with scaled y-axis
+    for infected_individuals in all_results:
+        ax1.plot(t, infected_individuals, 'b-', linewidth=1.5)
+    
+    ax1.set_xlabel("Time (days)")
+    ax1.set_ylabel("Total number of infected individuals")
+    ax1.set_title("(A) Convergence to an EEP")
+    ax1.set_xlim(0, 700)
+    # Scale y-axis to match paper (0 to ~3 x 10^5)
+    ax1.set_ylim(0, None)  # Let it auto-scale but start at 0
+    ax1.grid(True, alpha=0.3)
+    # Use scientific notation or scale if needed
+    ax1.ticklabel_format(style='scientific', axis='y', scilimits=(0,0))
+    
+    # Plot B: Zoomed view of tail end (650-750 days)
+    for infected_individuals in all_results:
+        ax2.plot(t, infected_individuals, 'b-', linewidth=1.5)
+    
+    ax2.set_xlabel("Time (days)")
+    ax2.set_ylabel("Total number of infected individuals")
+    ax2.set_title("(B) Blow up of tail end of Fig. 4(A)")
+    ax2.set_xlim(650, 750)
+    ax2.set_ylim(0, 300)  # Match paper's scale (0 to 300)
+    ax2.grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    plt.savefig("figure4.png", dpi=300)
+    print("Figure 4 saved to: figure4.png")
+
+
 if __name__ == "__main__":
-    main()
+    # Uncomment the function you want to run:
+    # main()  # For Figure 3
+    figure4()  # For Figure 4
 # the parameters needed to numerically demonstrate backwards bifurcation are
 # unrealistic, though the authors do assert that since the phenomena only
 # exists when the effects of vaccines are taken into consideration, which thus
